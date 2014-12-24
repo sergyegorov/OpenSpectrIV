@@ -83,6 +83,7 @@ public class MethodCalibratedChanels implements AbstractMethod{
         if(CurrentConnection == null || CurrentConnection.isClosed()){
             Class.forName("org.hsqldb.jdbc.JDBCDriver");
             CurrentConnection = DriverManager.getConnection("jdbc:hsqldb:file:"+getFile("db"), "SA", "");
+            CurrentConnection.setAutoCommit(false);
         }
         return CurrentConnection;
     }

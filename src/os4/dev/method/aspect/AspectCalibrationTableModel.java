@@ -33,7 +33,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableModel;
+
 import os4.Common;
 import os4.Mls;
 import os4.dev.method.AbstractFormula;
@@ -64,7 +67,6 @@ public class AspectCalibrationTableModel extends AbstractTableModel{
             Comments = rs.getString(3);
         }
     }
-    ArrayList<Row> Rows = new ArrayList<>();
     
     public class Column{
         public int Id;
@@ -91,6 +93,7 @@ public class AspectCalibrationTableModel extends AbstractTableModel{
             return Formula;
         }
     }
+    ArrayList<Row> Rows = new ArrayList<>();
     ArrayList<Column> Columns = new ArrayList<>();
 
     public AbstractFormula getFormula(int column) throws Exception{
@@ -125,6 +128,7 @@ public class AspectCalibrationTableModel extends AbstractTableModel{
         if(InsertFormulas.executeUpdate() == 0)
             throw new SQLException("No insert...");
         isUpdated = false;
+        fireTableStructureChanged();
     }
     
     PreparedStatement InsertProb;
@@ -152,6 +156,8 @@ public class AspectCalibrationTableModel extends AbstractTableModel{
         if(isUpdated)
             return;
         try{
+        	if(Columns == null)
+        		return;
             isUpdated = true;
             
             Columns.clear();

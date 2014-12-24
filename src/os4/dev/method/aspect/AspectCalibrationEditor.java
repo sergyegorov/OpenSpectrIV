@@ -63,10 +63,26 @@ public class AspectCalibrationEditor extends javax.swing.JPanel
     AbstractFormula selectedFormula;
     FixedColumnTable fixColumnDriver;
     final void updateTableModel(AspectCalibrationTableModel model){
-        jtMeasuringProb.setModel(new DefaultTableModel());
-        jtMeasuringProb.setModel(model);
-        //fixColumnDriver.unInstall();
-        fixColumnDriver = new FixedColumnTable(1, jScrollPane1);
+        //jtMeasuringProb.setModel(new DefaultTableModel());
+        //jtMeasuringProb.setModel(model);
+        //fixColumnDriver = new FixedColumnTable(1, jScrollPane1);
+    	jtMeasuringProb = new JTable(model);
+        jtMeasuringProb.setModel(tableModel);
+        jtMeasuringProb.setSelectionMode(WIDTH);
+        jtMeasuringProb.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        jtMeasuringProb.getColumnModel().getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
+            try{
+                int col = jtMeasuringProb.getSelectedColumn();
+                selectedFormula = tableModel.getFormula(col);
+                jpFormulaPanel.removeAll();
+                jpFormulaPanel.add(selectedFormula.getEditor(),BorderLayout.CENTER);
+                jpFormulaPanel.revalidate();
+                jpFormulaPanel.repaint();
+            } catch (Exception ex){
+                Log.log(Level.SEVERE, "Ошибка выбора",ex);
+            }
+        });
+    	jScrollPane1.setViewportView(jtMeasuringProb);
     }
     /**
      * Creates new form AspectCalibrationEditor
@@ -84,22 +100,8 @@ public class AspectCalibrationEditor extends javax.swing.JPanel
         jspDetailCalibr.setResizeWeight(0.5);
         
         tableModel = (AspectCalibrationTableModel)calibr.getModel();
-        jtMeasuringProb.setModel(tableModel);
-        jtMeasuringProb.setSelectionMode(WIDTH);
-        jtMeasuringProb.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        jtMeasuringProb.getColumnModel().getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
-            try{
-                int col = jtMeasuringProb.getSelectedColumn();
-                selectedFormula = tableModel.getFormula(col);
-                jpFormulaPanel.removeAll();
-                jpFormulaPanel.add(selectedFormula.getEditor(),BorderLayout.CENTER);
-                jpFormulaPanel.revalidate();
-                jpFormulaPanel.repaint();
-            } catch (Exception ex){
-                Log.log(Level.SEVERE, "Ошибка выбора",ex);
-            }
-        });
-        fixColumnDriver = new FixedColumnTable(1, jScrollPane1);
+        updateTableModel(tableModel);
+        //fixColumnDriver = new FixedColumnTable(1, jScrollPane1);
         
         JMenuBar mbar = new JMenuBar();
         add(mbar,BorderLayout.NORTH);
