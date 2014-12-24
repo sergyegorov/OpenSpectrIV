@@ -1,0 +1,292 @@
+/*
+ * The MIT License
+ *
+ * Copyright 2014 root.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+package os4.dev.method.chanels;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.swing.JPanel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+import os4.Common;
+import os4.Mls;
+import os4.dev.SpectrData;
+import os4.dev.method.AbstractMethod;
+import os4.dev.method.aspect.AspectChanelSetEditor;
+import os4.serv.AbstractChanelEditor;
+import os4.serv.MathTools;
+import os4.task.comp.CustomDrawingViewer;
+
+/**
+ *
+ * @author root
+ */
+public class MultiLineSpectrChanelEditor extends javax.swing.JPanel 
+    implements AbstractChanelEditor{
+    final static Logger Log = Common.getLogger(MultiLineSpectrChanelEditor.class);
+    MultiLineSpectrChanel Chanel;
+    AbstractMethod Method;
+    boolean Initing = false;
+    /**
+     * Creates new form MultiLineSpectrChanelEditor
+     * @param ch
+     * @param method
+     */
+    public MultiLineSpectrChanelEditor(MultiLineSpectrChanel ch,
+            AbstractMethod method) {
+        initComponents();
+        Initing = true;
+        Mls.translate(this);
+        Method = method;
+        Chanel = ch;
+        jtfName.setText(ch.getName());
+        jlLy.setText("Ly:"+MathTools.getGoodValue(ch.getLy(),3));
+        jcbSn.setSelectedIndex(ch.getSn());
+        ProfileMidle = Chanel.getProfileMidle();
+        Profile = Chanel.getProfile();
+        ProfilePainter = new Painter();
+        jpProfileView.add(ProfilePainter,BorderLayout.CENTER);
+        jsMinMaxValue.setValue(Chanel.getMaxMinPlusMinus());
+        jcbMinMaxType.setSelectedIndex(Chanel.getFindMaxMinType());
+        jsMinMaxValue.getModel().addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                try{
+                    if(Initing)
+                        return;
+                    Chanel.setFindMaxMinType(jcbMinMaxType.getSelectedIndex());
+                    Chanel.setMaxMinPlusMinus((float)jsMinMaxValue.getValue());
+                    Chanel.update(Method.getDBConnection());
+                    Chanel.commit();
+                }catch(Exception ex){
+                    Log.log(Level.SEVERE,"MinMax type selection error",ex);
+                }
+            }
+        });
+        Initing = false;
+    }
+
+    Painter ProfilePainter;
+    class Painter extends JPanel{
+        @Override
+        public void paint(Graphics g){
+            try{
+                g.setColor(Color.white);
+                g.fillRect(0, 0, ProfilePainter.getWidth(), ProfilePainter.getHeight());
+                g.setColor(Color.BLACK);
+                if(Profile == null){
+                    g.drawString(Mls.get("Установите длинну волны выбрав линию внизу и нажав кнопку слева."), 10, 20);
+                    return;
+                }
+                int h = ProfilePainter.getHeight();
+                double kx = ProfilePainter.getWidth() / (float)Profile.length;
+                double ky = h / 128.0;
+                
+                int px = -10000;
+                int py = (int)(h - ky * Profile[0]);
+                for(int i = 0;i<Profile.length;i++){
+                    int x = (int)(kx * i);
+                    int y = (int)(h - ky * Profile[i]);
+                    g.drawLine(px, py, x, y);
+                    px = x;
+                    py = y;
+                }
+                px = (int)(kx * ProfileMidle);
+                g.setColor(Color.BLUE);
+                g.drawLine(px, 0, px, h);
+            } catch(Exception ex){
+                Log.log(Level.SEVERE, "Paint profile error...", ex);
+            }
+        }
+    }
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        jLabel1 = new javax.swing.JLabel();
+        jtfName = new javax.swing.JTextField();
+        jlLy = new javax.swing.JLabel();
+        jcbSn = new javax.swing.JComboBox();
+        jpProfileView = new javax.swing.JPanel();
+        jbSetLy = new javax.swing.JButton();
+        jcbMinMaxType = new javax.swing.JComboBox();
+        jsMinMaxValue = new javax.swing.JSpinner();
+
+        jLabel1.setText("Имя");
+
+        jtfName.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jtfNameActionPerformed(evt);
+            }
+        });
+
+        jlLy.setText("Ly: -");
+
+        jcbSn.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Любой сенсор", "Сенсор №1", "Сенсор №2", "Сенсор №3", "Сенсор №4", "Сенсор №5", "Сенсор №6", "Сенсор №7", "Сенсор №8" }));
+
+        jpProfileView.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        jpProfileView.setLayout(new java.awt.BorderLayout());
+
+        jbSetLy.setText("Установить");
+        jbSetLy.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jbSetLyActionPerformed(evt);
+            }
+        });
+
+        jcbMinMaxType.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Минимум", "Не искать", "Максимум" }));
+        jcbMinMaxType.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jcbMinMaxTypeActionPerformed(evt);
+            }
+        });
+
+        jsMinMaxValue.setModel(new javax.swing.SpinnerNumberModel(Float.valueOf(0.0f), Float.valueOf(0.0f), Float.valueOf(10.0f), Float.valueOf(1.0f)));
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(10, 10, 10)
+                                .addComponent(jbSetLy, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(jcbSn, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jlLy)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel1)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jtfName))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(10, 10, 10)
+                        .addComponent(jcbMinMaxType, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jsMinMaxValue, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jpProfileView, javax.swing.GroupLayout.PREFERRED_SIZE, 536, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(jtfName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jcbSn, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jlLy, javax.swing.GroupLayout.PREFERRED_SIZE, 9, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jbSetLy)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jcbMinMaxType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jsMinMaxValue, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 164, Short.MAX_VALUE))
+            .addComponent(jpProfileView, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void jtfNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jtfNameActionPerformed
+        try{
+            Chanel.setName(jtfName.getText());
+            Chanel.update(Method.getDBConnection());
+            Chanel.commit();
+        }catch(Exception ex){
+            Log.log(Level.SEVERE,"",ex);
+        }
+    }//GEN-LAST:event_jtfNameActionPerformed
+
+    int ProfileMidle;
+    byte[] Profile;
+    private void jbSetLyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbSetLyActionPerformed
+        try{
+            double ly = Viewer.getCursorX();
+            int sn = jcbSn.getSelectedIndex()-1;
+            if(sn < 0){
+                int[] sns = Viewer.findSensorByLy(ly);
+                if(sns.length == 0)
+                    return;
+                sn = sns[0];
+            }
+            jlLy.setText("Ly:"+MathTools.getGoodValue(ly,3));
+            Chanel.setLy((float)ly);
+            SpectrData data = new SpectrData(Method.getFile(AspectChanelSetEditor.EtalonFileName));
+            SpectrData.ExtraReturnContainer midle = data.new ExtraReturnContainer();
+            double[] profile = data.getProfile(sn, ly, 500,midle);
+            Chanel.setProfile(profile, midle.Ret);
+            ProfileMidle = Chanel.getProfileMidle();
+            Profile = Chanel.getProfile();
+            ProfilePainter.repaint();
+            Chanel.update(Method.getDBConnection());
+            Chanel.commit();
+        }catch(Exception ex){
+            Log.log(Level.SEVERE,"",ex);
+        }
+    }//GEN-LAST:event_jbSetLyActionPerformed
+
+    private void jcbMinMaxTypeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jcbMinMaxTypeActionPerformed
+        try{
+            if(Initing)
+                return;
+            Chanel.setFindMaxMinType(jcbMinMaxType.getSelectedIndex());
+            Chanel.setMaxMinPlusMinus((float)jsMinMaxValue.getValue());
+            Chanel.update(Method.getDBConnection());
+            Chanel.commit();
+        }catch(Exception ex){
+            Log.log(Level.SEVERE,"MinMax type selection error",ex);
+        }
+    }//GEN-LAST:event_jcbMinMaxTypeActionPerformed
+
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JButton jbSetLy;
+    private javax.swing.JComboBox jcbMinMaxType;
+    private javax.swing.JComboBox jcbSn;
+    private javax.swing.JLabel jlLy;
+    private javax.swing.JPanel jpProfileView;
+    private javax.swing.JSpinner jsMinMaxValue;
+    private javax.swing.JTextField jtfName;
+    // End of variables declaration//GEN-END:variables
+
+    CustomDrawingViewer Viewer;
+    @Override
+    public void init(CustomDrawingViewer dv) {
+        Viewer = dv;
+    }
+}
